@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 type Operation = "addition" | "subtraction" | "multiplication" | "division";
@@ -14,7 +14,7 @@ interface Problem {
   expression: string;
 }
 
-export default function PracticePage() {
+function PracticePageContent() {
   const searchParams = useSearchParams();
   const operation = searchParams.get("operation") as Operation;
   const router = useRouter();
@@ -172,6 +172,20 @@ export default function PracticePage() {
         Voltar
       </button>
     </div>
+  );
+}
+
+export default function PracticePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-white">
+          Loading...
+        </div>
+      }
+    >
+      <PracticePageContent />
+    </Suspense>
   );
 }
 
