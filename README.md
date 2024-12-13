@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Math Practice App
 
-## Getting Started
+A simple math practice web application designed to help my daughter improve their math skills. The app provides interactive flashcards for addition, subtraction, multiplication, and division, tailored to specific rules for each operation.
 
-First, run the development server:
+## Features
+
+- **Operation Selection:** Choose from addition, subtraction, multiplication, or division.
+- **Dynamic Problem Generation:**
+  - **Addition:** Numbers from 1 to 1000 (e.g., 357 + 58).
+  - **Subtraction:** Numbers from 1 to 1000, ensuring non-negative results (e.g., 935 - 720).
+  - **Multiplication:** Multiplication table problems from 1x1 to 10x10.
+  - **Division:** Numbers up to 50, ensuring integer results (e.g., 30 ÷ 3 or 25 ÷ 5).
+- **Flashcards:** Each problem is presented as a flashcard with four answer options (one correct, three random).
+- **Interactive Feedback:** Correct answers turn green, incorrect ones turn red.
+- **Score Tracking:** Displays total correct and incorrect answers.
+- **Light/Dark Mode:** Toggle between light and dark themes for a better user experience.
+- **Responsive Design:** Fully functional on desktops, tablets, and mobile devices.
+
+## Technologies Used
+
+- **Next.js (v15)** with App Router
+- **React** (hooks for state management)
+- **TypeScript** for type safety and better developer experience
+- **Tailwind CSS** for styling
+- **Vercel** for hosting and deployment
+
+## How to Run the App
+
+### Installation
+
+1. **Clone the repository**:
+
+   ```bash
+   git clone https://github.com/gbflores/math-practice-app.git
+   ```
+
+2. **Navigate to the project directory**:
+
+   ```bash
+   cd math-practice-app
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+### Running the Development Server
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Building for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+To create an optimized production build:
 
-## Learn More
+```bash
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+Then, run the production server:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Your app should now be available at [http://localhost:3000](http://localhost:3000).
 
-## Deploy on Vercel
+## How to Use
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Select an Operation:** Choose from addition, subtraction, multiplication, or division on the home page.
+2. **Answer Flashcards:** Solve the displayed problems by selecting one of the four options.
+3. **View Feedback:** After selecting an answer, see if it’s correct (green) or incorrect (red).
+4. **Track Your Progress:** Monitor the score for correct and incorrect answers at the bottom of the flashcard.
+5. **Switch Modes:** Use the toggle button in the top-right corner to switch between light and dark modes.
+6. **Go Back:** Use the "Voltar" button to return to the home page and select another operation.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## About
+
+This application was created to provide a fun and interactive way to practice basic math skills. Perfect for both kids and adults looking to improve their arithmetic abilities.
+
+---
