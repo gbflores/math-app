@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 type Operation = "addition" | "subtraction" | "multiplication" | "division";
@@ -24,39 +24,37 @@ export default function PracticePage() {
   const [correctCount, setCorrectCount] = useState(0);
   const [incorrectCount, setIncorrectCount] = useState(0);
 
-  useEffect(() => {
-    if (operation) {
-      generateNewProblem(operation);
-    }
-  }, [operation]);
-
-  const generateNewProblem = (op: Operation) => {
+  const generateNewProblem = useCallback((op: Operation) => {
     let a = 0,
       b = 0,
       correctAnswer = 0;
     let expression = "";
 
     if (op === "addition") {
-      a = randomInt(1, 1000);
-      b = randomInt(1, 1000);
+      const x = randomInt(1, 1000);
+      const y = randomInt(1, 1000);
+      a = x;
+      b = y;
       correctAnswer = a + b;
       expression = `${a} + ${b}`;
     } else if (op === "subtraction") {
-      let x = randomInt(1, 1000);
-      let y = randomInt(1, 1000);
+      const x = randomInt(1, 1000);
+      const y = randomInt(1, 1000);
       a = Math.max(x, y);
       b = Math.min(x, y);
       correctAnswer = a - b;
       expression = `${a} - ${b}`;
     } else if (op === "multiplication") {
-      a = randomInt(1, 10);
-      b = randomInt(1, 10);
+      const x = randomInt(1, 10);
+      const y = randomInt(1, 10);
+      a = x;
+      b = y;
       correctAnswer = a * b;
       expression = `${a} x ${b}`;
     } else if (op === "division") {
       while (true) {
-        let x = randomInt(1, 50);
-        let y = randomInt(1, 50);
+        const x = randomInt(1, 50);
+        const y = randomInt(1, 50);
         if (x % y === 0) {
           a = x;
           b = y;
@@ -70,7 +68,7 @@ export default function PracticePage() {
     const choices = generateChoices(correctAnswer, op);
     setProblem({ a, b, operation: op, correctAnswer, choices, expression });
     setSelectedAnswer(null);
-  };
+  }, []);
 
   const generateChoices = (correct: number, op: Operation) => {
     const choicesSet = new Set<number>();
@@ -106,6 +104,12 @@ export default function PracticePage() {
       generateNewProblem(operation);
     }, 1000);
   };
+
+  useEffect(() => {
+    if (operation) {
+      generateNewProblem(operation);
+    }
+  }, [operation, generateNewProblem]);
 
   if (!problem) {
     return (
@@ -161,7 +165,6 @@ export default function PracticePage() {
         </div>
       </div>
 
-      {/* Button to go back to home page */}
       <button
         onClick={() => router.push("/")}
         className="mt-8 bg-white dark:bg-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600 text-black font-bold py-2 px-4 rounded transition-colors"
