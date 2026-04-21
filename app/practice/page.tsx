@@ -38,7 +38,23 @@ interface Problem {
   expression: string;
 }
 
+type StoredProgress = {
+  correctCount: number;
+  incorrectCount: number;
+};
+
+type PlayerProgress = {
+  points: number;
+  level: number;
+  currentLevelThreshold: number;
+  nextLevelThreshold: number;
+  progressInLevel: number;
+  pointsNeeded: number;
+  progressPercent: number;
+};
+
 const additionConfigs: RangeConfig[] = [
+  { key: "1-500", label: "1 a 500", min: 1, max: 500 },
   { key: "1-1000", label: "1 a 1000", min: 1, max: 1000 },
   { key: "1-10000", label: "1 a 10000", min: 1, max: 10000 },
   { key: "500-1000", label: "500 a 1000", min: 500, max: 1000 },
@@ -80,6 +96,8 @@ const operationConfigs: Record<Operation, ConfigOption[]> = {
   division: divisionConfigs,
 };
 
+const PROGRESS_STORAGE_KEY = "math-app-progress-v3";
+
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   const tag = target.tagName;
@@ -97,6 +115,9 @@ function PracticePageContent() {
   const [correctCount, setCorrectCount] = useState(0);
   const [incorrectCount, setIncorrectCount] = useState(0);
   const [selectedConfigKey, setSelectedConfigKey] = useState("");
+  const [isProgressLoaded, setIsProgressLoaded] = useState(false);
+
+  const playerProgress = calculatePlayerProgress(correctCount, incorrectCount);
 
   const generateNewProblem = useCallback((op: Operation, configKey: string) => {
     const config = getConfigForOperation(op, configKey);
@@ -177,6 +198,13 @@ function PracticePageContent() {
   );
 
   useEffect(() => {
+    const storedProgress = readStoredProgress();
+    setCorrectCount(storedProgress.correctCount);
+    setIncorrectCount(storedProgress.incorrectCount);
+    setIsProgressLoaded(true);
+  }, []);
+
+  useEffect(() => {
     if (operation) {
       const initialConfig = operationConfigs[operation]?.[0];
       if (initialConfig) {
@@ -190,6 +218,15 @@ function PracticePageContent() {
       generateNewProblem(operation, selectedConfigKey);
     }
   }, [operation, selectedConfigKey, generateNewProblem]);
+
+  useEffect(() => {
+    if (!isProgressLoaded) return;
+
+    writeStoredProgress({
+      correctCount,
+      incorrectCount,
+    });
+  }, [correctCount, incorrectCount, isProgressLoaded]);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
@@ -246,7 +283,7 @@ function PracticePageContent() {
         <ThemeToggle />
       </div>
 
-      <div className="flex flex-col flex-1 min-h-0 w-full max-w-xl mx-auto items-center justify-center">
+      <div className="flex flex-col flex-1 min-h-0 w-full max-w-6xl mx-auto items-center justify-center">
         <h1 className="text-2xl sm:text-3xl md:text-4xl text-white font-bold mb-2 text-center drop-shadow-sm leading-tight px-1">
           Praticando {translateOperation(problem.operation)}
         </h1>
@@ -267,69 +304,131 @@ function PracticePageContent() {
             bg-white/90 dark:bg-slate-900/55 backdrop-blur-xl shadow-2xl shadow-black/15 dark:shadow-black/40
             p-5 sm:p-6 md:p-8 transition-colors duration-300"
         >
-          <label className="block w-full mb-5">
-            <span className="block text-sm font-semibold mb-2 text-slate-800 dark:text-white">
-              Configuração
-            </span>
-            <select
-              value={selectedConfigKey}
-              onChange={(event) => setSelectedConfigKey(event.target.value)}
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm text-slate-900 dark:text-white"
-            >
-              {operationConfigs[problem.operation].map((config) => (
-                <option key={config.key} value={config.key}>
-                  {config.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-6">
+            <div className="flex flex-col gap-4">
+              <div className="rounded-2xl border border-amber-200/80 dark:border-amber-400/20 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-900 p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
+                      Progresso
+                    </div>
+                    <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
+                      Level {playerProgress.level}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                      Pontos
+                    </div>
+                    <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
+                      {playerProgress.points}
+                    </div>
+                  </div>
+                </div>
 
-          <div className="text-3xl sm:text-4xl font-bold mb-6 text-center text-slate-900 dark:text-white">
-            {problem.expression}
-          </div>
+                <div className="mt-4">
+                  <div className="mb-2 flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-300">
+                    <span>
+                      {playerProgress.progressInLevel} /{" "}
+                      {playerProgress.nextLevelThreshold -
+                        playerProgress.currentLevelThreshold}
+                    </span>
+                    <span>Faltam {playerProgress.pointsNeeded} pontos</span>
+                  </div>
+                  <div className="h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-[width] duration-300"
+                      style={{ width: `${playerProgress.progressPercent}%` }}
+                    />
+                  </div>
+                  <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    Próximo level em {playerProgress.nextLevelThreshold} pontos totais
+                  </div>
+                </div>
+              </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full">
-            {problem.choices.map((c, index) => {
-              const shortcut = index + 1;
-              const isSelected = selectedAnswer === c;
-              const isCorrect = c === problem.correctAnswer;
-              let choiceClass =
-                "group relative min-h-[88px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold px-4 py-4 transition-colors";
-              if (selectedAnswer !== null) {
-                if (isSelected && isCorrect) {
-                  choiceClass =
-                    "group relative min-h-[88px] rounded-xl border border-green-500 bg-green-500 text-white font-bold px-4 py-4";
-                } else if (isSelected && !isCorrect) {
-                  choiceClass =
-                    "group relative min-h-[88px] rounded-xl border border-red-500 bg-red-500 text-white font-bold px-4 py-4";
-                }
-              }
-
-              return (
-                <button
-                  key={c}
-                  onClick={() => handleChoice(c)}
-                  disabled={selectedAnswer !== null}
-                  className={choiceClass}
-                  aria-label={`Alternativa ${shortcut}: ${c}`}
-                >
-                  <span className="absolute top-2 right-2 hidden md:flex items-center justify-center rounded-md border border-current/20 bg-black/10 dark:bg-white/10 px-2 py-1 text-[10px] font-mono">
-                    {shortcut}
-                  </span>
-                  <span className="flex h-full items-center justify-center text-xl sm:text-2xl">
-                    {c}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="flex justify-between w-full mt-6 text-sm sm:text-base">
-            <div className="text-green-800 dark:text-green-400 font-semibold">
-              Acertos: {correctCount}
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 p-4">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                  Resultado
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3">
+                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-400">
+                      Acertos
+                    </div>
+                    <div className="mt-1 text-2xl font-bold text-emerald-800 dark:text-emerald-300">
+                      {correctCount}
+                    </div>
+                  </div>
+                  <div className="rounded-xl bg-rose-50 dark:bg-rose-950/40 px-4 py-3">
+                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-rose-700 dark:text-rose-400">
+                      Erros
+                    </div>
+                    <div className="mt-1 text-2xl font-bold text-rose-800 dark:text-rose-300">
+                      {incorrectCount}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="text-red-800 dark:text-red-400 font-semibold">
-              Erros: {incorrectCount}
+
+            <div className="min-w-0">
+              <label className="block w-full mb-5">
+                <span className="block text-sm font-semibold mb-2 text-slate-800 dark:text-white">
+                  Configuração
+                </span>
+                <select
+                  value={selectedConfigKey}
+                  onChange={(event) => setSelectedConfigKey(event.target.value)}
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm text-slate-900 dark:text-white"
+                >
+                  {operationConfigs[problem.operation].map((config) => (
+                    <option key={config.key} value={config.key}>
+                      {config.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-center text-slate-900 dark:text-white">
+                {problem.expression}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full">
+                {problem.choices.map((c, index) => {
+                  const shortcut = index + 1;
+                  const isSelected = selectedAnswer === c;
+                  const isCorrect = c === problem.correctAnswer;
+                  let choiceClass =
+                    "group relative min-h-[88px] sm:min-h-[108px] rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold px-4 py-4 transition-colors";
+                  if (selectedAnswer !== null) {
+                    if (isSelected && isCorrect) {
+                      choiceClass =
+                        "group relative min-h-[88px] sm:min-h-[108px] rounded-xl border border-green-500 bg-green-500 text-white font-bold px-4 py-4";
+                    } else if (isSelected && !isCorrect) {
+                      choiceClass =
+                        "group relative min-h-[88px] sm:min-h-[108px] rounded-xl border border-red-500 bg-red-500 text-white font-bold px-4 py-4";
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => handleChoice(c)}
+                      disabled={selectedAnswer !== null}
+                      className={choiceClass}
+                      aria-label={`Alternativa ${shortcut}: ${c}`}
+                    >
+                      <span className="absolute top-2 right-2 hidden md:flex items-center justify-center rounded-md border border-current/20 bg-black/10 dark:bg-white/10 px-2 py-1 text-[10px] font-mono">
+                        {shortcut}
+                      </span>
+                      <span className="flex h-full items-center justify-center text-xl sm:text-2xl">
+                        {c}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -412,4 +511,71 @@ function getMaxWrongAnswer(
   }
 
   return Math.max(correct + 10, 20);
+}
+
+function readStoredProgress(): StoredProgress {
+  if (typeof window === "undefined") {
+    return { correctCount: 0, incorrectCount: 0 };
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(PROGRESS_STORAGE_KEY);
+    if (!rawValue) {
+      return { correctCount: 0, incorrectCount: 0 };
+    }
+
+    const parsedValue = JSON.parse(rawValue) as Partial<StoredProgress>;
+    return {
+      correctCount: sanitizeCount(parsedValue.correctCount),
+      incorrectCount: sanitizeCount(parsedValue.incorrectCount),
+    };
+  } catch {
+    return { correctCount: 0, incorrectCount: 0 };
+  }
+}
+
+function writeStoredProgress(progress: StoredProgress) {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(progress));
+}
+
+function sanitizeCount(value: unknown) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return 0;
+  return Math.max(0, Math.floor(value));
+}
+
+function calculatePlayerProgress(
+  correctCount: number,
+  incorrectCount: number,
+): PlayerProgress {
+  const points = Math.max(correctCount - incorrectCount, 0);
+  const thresholds = [10];
+
+  while (thresholds[thresholds.length - 1] <= points) {
+    thresholds.push(Math.round(thresholds[thresholds.length - 1] * 1.2));
+  }
+
+  let level = 0;
+  while (level < thresholds.length && points >= thresholds[level]) {
+    level += 1;
+  }
+
+  const currentLevelThreshold = level === 0 ? 0 : thresholds[level - 1];
+  const nextLevelThreshold = thresholds[level];
+  const levelRange = nextLevelThreshold - currentLevelThreshold;
+  const progressInLevel = points - currentLevelThreshold;
+  const pointsNeeded = Math.max(nextLevelThreshold - points, 0);
+  const progressPercent =
+    levelRange === 0 ? 100 : Math.min((progressInLevel / levelRange) * 100, 100);
+
+  return {
+    points,
+    level,
+    currentLevelThreshold,
+    nextLevelThreshold,
+    progressInLevel,
+    pointsNeeded,
+    progressPercent,
+  };
 }
