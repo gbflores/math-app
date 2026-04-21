@@ -270,11 +270,11 @@ function PracticePageContent() {
     <div
       className="relative h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col items-stretch
         bg-gradient-to-br from-teal-500 via-cyan-500 to-sky-400 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950
-        px-3 pt-11 pb-4 sm:px-4 sm:pt-14 sm:pb-6 transition-colors duration-300"
+        px-3 pt-12 pb-4 sm:px-4 sm:pt-14 sm:pb-6 transition-colors duration-300"
     >
       <button
         onClick={() => router.push("/")}
-        className="absolute top-3 left-3 z-10 bg-white/90 dark:bg-slate-900/55 backdrop-blur-xl border border-white/40 dark:border-white/20 dark:text-white hover:bg-white dark:hover:bg-slate-800 text-black font-bold py-2.5 px-5 rounded-xl transition-colors sm:top-4 sm:left-4"
+        className="absolute top-3 left-3 z-10 bg-white/90 dark:bg-slate-900/55 backdrop-blur-xl border border-white/40 dark:border-white/20 dark:text-white hover:bg-white dark:hover:bg-slate-800 text-black font-bold py-2 px-4 rounded-xl transition-colors sm:top-4 sm:left-4 sm:py-2.5 sm:px-5"
       >
         Voltar
       </button>
@@ -283,10 +283,13 @@ function PracticePageContent() {
         <ThemeToggle />
       </div>
 
-      <div className="flex flex-col flex-1 min-h-0 w-full max-w-6xl mx-auto items-center justify-center">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl text-white font-bold mb-2 text-center drop-shadow-sm leading-tight px-1">
+      <div className="flex flex-col flex-1 min-h-0 w-full max-w-md lg:max-w-6xl mx-auto items-center justify-center">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl text-white font-bold mb-1 sm:mb-2 text-center drop-shadow-sm leading-tight px-1">
           Praticando {translateOperation(problem.operation)}
         </h1>
+        <p className="text-white/90 text-sm mb-4 text-center md:hidden">
+          Escolha a configuração e toque na resposta.
+        </p>
         <p className="hidden md:block text-white/90 text-sm mb-5 text-center">
           No desktop, use as teclas{" "}
           <kbd className="px-1.5 py-0.5 rounded bg-white/20 border border-white/30 text-xs font-semibold">
@@ -302,17 +305,17 @@ function PracticePageContent() {
         <div
           className="w-full rounded-2xl border border-white/40 dark:border-white/20
             bg-white/90 dark:bg-slate-900/55 backdrop-blur-xl shadow-2xl shadow-black/15 dark:shadow-black/40
-            p-5 sm:p-6 md:p-8 transition-colors duration-300"
+            p-4 sm:p-6 md:p-8 transition-colors duration-300"
         >
-          <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-6">
-            <div className="flex flex-col gap-4">
-              <div className="rounded-2xl border border-amber-200/80 dark:border-amber-400/20 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-900 p-4">
+          <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-6">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <div className="rounded-2xl border border-amber-200/80 dark:border-amber-400/20 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-900 p-3.5 sm:p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
                       Progresso
                     </div>
-                    <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
+                    <div className="mt-1 text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                       Level {playerProgress.level}
                     </div>
                   </div>
@@ -320,14 +323,14 @@ function PracticePageContent() {
                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
                       Pontos
                     </div>
-                    <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
+                    <div className="mt-1 text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                       {playerProgress.points}
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <div className="mb-2 flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-300">
+                <div className="mt-3">
+                  <div className="mb-2 flex items-center justify-between gap-3 text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300">
                     <span>
                       {playerProgress.progressInLevel} /{" "}
                       {playerProgress.nextLevelThreshold -
@@ -341,30 +344,30 @@ function PracticePageContent() {
                       style={{ width: `${playerProgress.progressPercent}%` }}
                     />
                   </div>
-                  <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="mt-2 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
                     Próximo level em {playerProgress.nextLevelThreshold} pontos totais
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 p-4">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 p-3.5 sm:p-4">
                 <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
                   Resultado
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3">
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 px-3 py-3 sm:px-4">
                     <div className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-400">
                       Acertos
                     </div>
-                    <div className="mt-1 text-2xl font-bold text-emerald-800 dark:text-emerald-300">
+                    <div className="mt-1 text-xl sm:text-2xl font-bold text-emerald-800 dark:text-emerald-300">
                       {correctCount}
                     </div>
                   </div>
-                  <div className="rounded-xl bg-rose-50 dark:bg-rose-950/40 px-4 py-3">
+                  <div className="rounded-xl bg-rose-50 dark:bg-rose-950/40 px-3 py-3 sm:px-4">
                     <div className="text-xs font-semibold uppercase tracking-[0.14em] text-rose-700 dark:text-rose-400">
                       Erros
                     </div>
-                    <div className="mt-1 text-2xl font-bold text-rose-800 dark:text-rose-300">
+                    <div className="mt-1 text-xl sm:text-2xl font-bold text-rose-800 dark:text-rose-300">
                       {incorrectCount}
                     </div>
                   </div>
@@ -373,14 +376,14 @@ function PracticePageContent() {
             </div>
 
             <div className="min-w-0">
-              <label className="block w-full mb-5">
+              <label className="block w-full mb-4 sm:mb-5">
                 <span className="block text-sm font-semibold mb-2 text-slate-800 dark:text-white">
                   Configuração
                 </span>
                 <select
                   value={selectedConfigKey}
                   onChange={(event) => setSelectedConfigKey(event.target.value)}
-                  className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm text-slate-900 dark:text-white"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-3 text-sm text-slate-900 dark:text-white"
                 >
                   {operationConfigs[problem.operation].map((config) => (
                     <option key={config.key} value={config.key}>
@@ -390,7 +393,7 @@ function PracticePageContent() {
                 </select>
               </label>
 
-              <div className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-center text-slate-900 dark:text-white">
+              <div className="text-[2rem] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 text-center text-slate-900 dark:text-white">
                 {problem.expression}
               </div>
 
@@ -400,14 +403,14 @@ function PracticePageContent() {
                   const isSelected = selectedAnswer === c;
                   const isCorrect = c === problem.correctAnswer;
                   let choiceClass =
-                    "group relative min-h-[88px] sm:min-h-[108px] rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold px-4 py-4 transition-colors";
+                    "group relative min-h-[84px] sm:min-h-[108px] rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold px-3 py-3 sm:px-4 sm:py-4 transition-colors";
                   if (selectedAnswer !== null) {
                     if (isSelected && isCorrect) {
                       choiceClass =
-                        "group relative min-h-[88px] sm:min-h-[108px] rounded-xl border border-green-500 bg-green-500 text-white font-bold px-4 py-4";
+                        "group relative min-h-[84px] sm:min-h-[108px] rounded-xl border border-green-500 bg-green-500 text-white font-bold px-3 py-3 sm:px-4 sm:py-4";
                     } else if (isSelected && !isCorrect) {
                       choiceClass =
-                        "group relative min-h-[88px] sm:min-h-[108px] rounded-xl border border-red-500 bg-red-500 text-white font-bold px-4 py-4";
+                        "group relative min-h-[84px] sm:min-h-[108px] rounded-xl border border-red-500 bg-red-500 text-white font-bold px-3 py-3 sm:px-4 sm:py-4";
                     }
                   }
 

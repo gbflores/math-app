@@ -58,16 +58,19 @@ export default function Home() {
     <div
       className="relative h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col items-stretch
         bg-gradient-to-br from-teal-500 via-cyan-500 to-sky-400 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950
-        px-3 pt-11 pb-3 sm:px-4 sm:pt-14 sm:pb-4 transition-colors duration-300"
+        px-3 pt-12 pb-4 sm:px-4 sm:pt-14 sm:pb-4 transition-colors duration-300"
     >
       <div className="absolute top-3 right-3 z-10 sm:top-4 sm:right-4">
         <ThemeToggle />
       </div>
 
-      <div className="flex flex-col flex-1 min-h-0 w-full max-w-xl sm:max-w-2xl mx-auto items-center">
-        <h1 className="shrink-0 text-lg sm:text-3xl md:text-4xl text-white font-bold mb-1 sm:mb-2 text-center drop-shadow-sm leading-tight px-1">
+      <div className="flex flex-col flex-1 min-h-0 w-full max-w-md md:max-w-2xl mx-auto items-center justify-center">
+        <h1 className="shrink-0 text-2xl sm:text-3xl md:text-4xl text-white font-bold mb-1 sm:mb-2 text-center drop-shadow-sm leading-tight px-1">
           Praticar Matemática
         </h1>
+        <p className="shrink-0 text-white/90 text-sm mb-4 text-center md:hidden">
+          Escolha uma operação para começar.
+        </p>
         <p className="hidden md:block shrink-0 text-white/90 text-sm mb-4 text-center">
           No desktop, use as teclas{" "}
           <kbd className="px-1.5 py-0.5 rounded bg-white/20 border border-white/30 text-xs font-semibold">
@@ -80,19 +83,24 @@ export default function Home() {
           para ir direto.
         </p>
 
-        <div className="flex-1 min-h-0 w-full grid grid-cols-2 grid-rows-2 gap-2 sm:gap-4 md:gap-5">
+        <div
+          className="w-full rounded-3xl border border-white/35 dark:border-white/15
+            bg-white/12 dark:bg-slate-900/35 backdrop-blur-xl shadow-2xl shadow-black/10 dark:shadow-black/35
+            p-3 sm:p-4 md:flex-1 md:min-h-0"
+        >
+          <div className="grid h-full w-full grid-cols-2 gap-3 sm:gap-4 md:grid-rows-2 md:gap-5">
           {operations.map((op) => (
             <button
               key={op.value}
               type="button"
               onClick={() => goToOperation(op.value)}
               aria-label={`${op.name}, atalho tecla ${op.shortcut}`}
-              className="group relative min-h-0 min-w-0 h-full w-full flex flex-col items-center justify-center
-                gap-1 sm:gap-2 md:gap-3 rounded-xl sm:rounded-2xl px-1 py-1.5 sm:px-2 sm:py-3
-                border border-white/40 dark:border-white/20
-                bg-white/25 dark:bg-slate-900/45
+              className="group relative min-h-[118px] min-w-0 w-full flex flex-col items-center justify-center
+                gap-2 rounded-2xl px-3 py-4 sm:min-h-[132px] sm:gap-2.5 sm:rounded-2xl sm:px-3 sm:py-4 md:h-full md:min-h-0
+                border border-white/45 dark:border-white/20
+                bg-white/24 dark:bg-slate-900/45
                 backdrop-blur-xl shadow-lg shadow-black/10 dark:shadow-black/40
-                text-white font-semibold text-[0.65rem] leading-tight sm:text-xs md:text-lg lg:text-2xl
+                text-white font-semibold text-sm leading-tight sm:text-base md:text-lg lg:text-2xl
                 transition-all duration-200 ease-out
                 hover:scale-[1.02] hover:border-white/60 dark:hover:border-white/35
                 hover:bg-white/35 dark:hover:bg-slate-800/55 hover:shadow-2xl
@@ -100,15 +108,15 @@ export default function Home() {
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
             >
               <span
-                className="flex h-7 w-7 shrink-0 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full
+                className="flex h-10 w-10 shrink-0 sm:h-11 sm:w-11 md:h-11 md:w-11 items-center justify-center rounded-full
                   bg-white/35 dark:bg-white/15 border border-white/50 dark:border-white/25
-                  text-xs sm:text-lg md:text-xl font-bold shadow-inner
+                  text-base sm:text-lg md:text-xl font-bold shadow-inner
                   group-hover:bg-white/45 dark:group-hover:bg-white/20 transition-colors"
                 aria-hidden
               >
                 {op.shortcut}
               </span>
-              <span className="px-0.5 text-center leading-snug line-clamp-2 sm:line-clamp-none">
+              <span className="px-1 text-center leading-snug line-clamp-2">
                 {op.name}
               </span>
               <span className="hidden md:flex absolute bottom-1.5 sm:bottom-2 md:bottom-3 items-center gap-1 text-[10px] sm:text-xs font-medium text-white/80">
@@ -118,6 +126,7 @@ export default function Home() {
               </span>
             </button>
           ))}
+        </div>
         </div>
       </div>
     </div>
