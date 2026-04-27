@@ -40,12 +40,20 @@ interface Problem {
   expression: string;
 }
 
+type Attempt = {
+  expression: string;
+  selectedAnswer: number;
+  correctAnswer: number;
+  isCorrect: boolean;
+};
+
 type StoredProgress = {
   correctCount: number;
   incorrectCount: number;
   totalStudyTimeMs: number;
   timeByLevel: Record<string, number>;
   currentLevel: number;
+  attempts: Attempt[];
 };
 
 type LegacyStoredProgress = {
@@ -134,6 +142,7 @@ function PracticePageContent() {
   const [incorrectCount, setIncorrectCount] = useState(0);
   const [totalStudyTimeMs, setTotalStudyTimeMs] = useState(0);
   const [timeByLevel, setTimeByLevel] = useState<Record<string, number>>({});
+  const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [selectedConfigKey, setSelectedConfigKey] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty>("medium");
@@ -161,6 +170,8 @@ function PracticePageContent() {
         .filter((level) => Number.isFinite(level) && level > 0),
     ]),
   ).sort((left, right) => left - right);
+  const correctAttempts = attempts.filter((attempt) => attempt.isCorrect);
+  const incorrectAttempts = attempts.filter((attempt) => !attempt.isCorrect);
 
   const persistProgress = useCallback((progress: StoredProgress) => {
     writeStoredProgress(progress);
@@ -296,8 +307,17 @@ function PracticePageContent() {
     (answer: number) => {
       if (!problem) return;
 
+      const isCorrect = answer === problem.correctAnswer;
+      const nextAttempt: Attempt = {
+        expression: problem.expression,
+        selectedAnswer: answer,
+        correctAnswer: problem.correctAnswer,
+        isCorrect,
+      };
+
       setSelectedAnswer(answer);
-      if (answer === problem.correctAnswer) {
+      setAttempts((prev) => [...prev, nextAttempt]);
+      if (isCorrect) {
         setCorrectCount((prev) => prev + 1);
       } else {
         setIncorrectCount((prev) => prev + 1);
@@ -323,6 +343,7 @@ function PracticePageContent() {
     setIncorrectCount(0);
     setTotalStudyTimeMs(0);
     setTimeByLevel({});
+    setAttempts([]);
     setActiveStudySessionMs(0);
 
     persistProgress(resetProgress);
@@ -343,6 +364,7 @@ function PracticePageContent() {
     setIncorrectCount(storedProgress.incorrectCount);
     setTotalStudyTimeMs(storedProgress.totalStudyTimeMs);
     setTimeByLevel(storedProgress.timeByLevel);
+    setAttempts(storedProgress.attempts);
     latestProgressRef.current = storedProgress;
     currentLevelRef.current = storedProgress.currentLevel;
     setIsProgressLoaded(true);
@@ -372,8 +394,10 @@ function PracticePageContent() {
       totalStudyTimeMs,
       timeByLevel,
       currentLevel: playerProgress.level,
+      attempts,
     });
   }, [
+    attempts,
     correctCount,
     incorrectCount,
     isProgressLoaded,
@@ -601,7 +625,7 @@ function PracticePageContent() {
                     onClick={handleOpenProgressModal}
                     className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-900/70"
                   >
-                    Ver todos os tempos
+                    Ver progresso e histórico
                   </button>
                 </div>
                 <div className="mt-3 rounded-xl bg-slate-100/80 px-3 py-3 text-sm text-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
@@ -705,7 +729,7 @@ function PracticePageContent() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="progress-modal-title"
-            className="w-full max-w-lg rounded-3xl border border-white/20 bg-white p-5 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+            className="w-full max-w-4xl rounded-3xl border border-white/20 bg-white p-5 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-white"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -779,6 +803,58 @@ function PracticePageContent() {
                     </span>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">
+                  Lista de acertos
+                </div>
+                <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1">
+                  {correctAttempts.length > 0 ? (
+                    correctAttempts.map((attempt, index) => (
+                        <div
+                          key={`${attempt.expression}-${attempt.selectedAnswer}-${index}`}
+                          className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100"
+                        >
+                          {attempt.expression}
+                        </div>
+                      ))
+                  ) : (
+                    <div className="rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                      Nenhum acerto registrado ainda.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700 dark:text-rose-400">
+                  Lista de erros
+                </div>
+                <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1">
+                  {incorrectAttempts.length > 0 ? (
+                    incorrectAttempts.map((attempt, index) => (
+                        <div
+                          key={`${attempt.expression}-${attempt.selectedAnswer}-${index}`}
+                          className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-950 dark:bg-rose-950/30 dark:text-rose-100"
+                        >
+                          <div className="font-semibold">{attempt.expression}</div>
+                          <div className="mt-1 text-xs text-rose-800 dark:text-rose-200">
+                            Correta: {attempt.correctAnswer}
+                          </div>
+                          <div className="mt-1 text-xs text-rose-800 dark:text-rose-200">
+                            Respondida: {attempt.selectedAnswer}
+                          </div>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                      Nenhum erro registrado ainda.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -972,6 +1048,7 @@ function createEmptyStoredProgress(): StoredProgress {
     totalStudyTimeMs: 0,
     timeByLevel: {},
     currentLevel: 1,
+    attempts: [],
   };
 }
 
@@ -1016,6 +1093,7 @@ function normalizeStoredProgress(value: unknown): StoredProgress {
     totalStudyTimeMs: sanitizeCount(parsedValue.totalStudyTimeMs),
     timeByLevel: sanitizeTimeByLevel(parsedValue.timeByLevel),
     currentLevel: sanitizeCount(parsedValue.currentLevel) || 1,
+    attempts: sanitizeAttempts(parsedValue.attempts),
   };
 
   return {
@@ -1043,6 +1121,38 @@ function sanitizeTimeByLevel(value: unknown) {
     accumulator[String(numericLevel)] = sanitizeCount(time);
     return accumulator;
   }, {});
+}
+
+function sanitizeAttempts(value: unknown): Attempt[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.reduce<Attempt[]>((accumulator, attempt) => {
+    if (!attempt || typeof attempt !== "object") {
+      return accumulator;
+    }
+
+    const parsedAttempt = attempt as Partial<Attempt>;
+    if (
+      typeof parsedAttempt.expression !== "string" ||
+      typeof parsedAttempt.selectedAnswer !== "number" ||
+      !Number.isFinite(parsedAttempt.selectedAnswer) ||
+      typeof parsedAttempt.correctAnswer !== "number" ||
+      !Number.isFinite(parsedAttempt.correctAnswer) ||
+      typeof parsedAttempt.isCorrect !== "boolean"
+    ) {
+      return accumulator;
+    }
+
+    accumulator.push({
+      expression: parsedAttempt.expression,
+      selectedAnswer: Math.round(parsedAttempt.selectedAnswer),
+      correctAnswer: Math.round(parsedAttempt.correctAnswer),
+      isCorrect: parsedAttempt.isCorrect,
+    });
+    return accumulator;
+  }, []);
 }
 
 function clearStoredProgress() {
