@@ -56,7 +56,7 @@ export default function Home() {
 
   return (
     <div
-      className="relative h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col items-stretch
+      className="relative min-h-[100dvh] overflow-y-auto overflow-x-hidden md:h-[100dvh] md:max-h-[100dvh] md:overflow-hidden flex flex-col items-stretch
         bg-gradient-to-br from-teal-500 via-cyan-500 to-sky-400 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950
         px-3 pt-12 pb-4 sm:px-4 sm:pt-14 sm:pb-4 transition-colors duration-300"
     >
