@@ -129,6 +129,18 @@ export default function Home() {
         </div>
         </div>
       </div>
+
+      <footer className="shrink-0 pt-4 text-center text-xs text-white/70">
+        Criado por{" "}
+        <a
+          href="https://guiflores.dev"
+          target="_blank"
+          rel="noreferrer"
+          className="font-semibold underline decoration-white/30 underline-offset-2 transition-colors hover:text-white"
+        >
+          guiflores.dev
+        </a>
+      </footer>
     </div>
   );
 }

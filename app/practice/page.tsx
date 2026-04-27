@@ -149,6 +149,8 @@ function PracticePageContent() {
   const [isProgressLoaded, setIsProgressLoaded] = useState(false);
   const [activeStudySessionMs, setActiveStudySessionMs] = useState(0);
   const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
+  const [isAttemptDetailsVisible, setIsAttemptDetailsVisible] = useState(false);
+  const [areAttemptFieldsCompact, setAreAttemptFieldsCompact] = useState(true);
 
   const sessionStartedAtRef = useRef<number | null>(null);
   const latestProgressRef = useRef<StoredProgress>(createEmptyStoredProgress());
@@ -351,12 +353,28 @@ function PracticePageContent() {
   }, [flushActiveStudyTime, persistProgress, startActiveStudySession]);
 
   const handleOpenProgressModal = useCallback(() => {
+    setIsAttemptDetailsVisible(false);
+    setAreAttemptFieldsCompact(true);
     setIsProgressModalOpen(true);
   }, []);
 
   const handleCloseProgressModal = useCallback(() => {
     setIsProgressModalOpen(false);
   }, []);
+
+  useEffect(() => {
+    if (!isProgressModalOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+
+      event.preventDefault();
+      handleCloseProgressModal();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleCloseProgressModal, isProgressModalOpen]);
 
   useEffect(() => {
     const storedProgress = readStoredProgress();
@@ -473,6 +491,7 @@ function PracticePageContent() {
       if (event.repeat) return;
       if (event.defaultPrevented) return;
       if (isEditableTarget(event.target)) return;
+      if (isProgressModalOpen) return;
       if (!problem || selectedAnswer !== null) return;
 
       let digit: number | null = null;
@@ -493,7 +512,7 @@ function PracticePageContent() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [handleChoice, problem, selectedAnswer]);
+  }, [handleChoice, isProgressModalOpen, problem, selectedAnswer]);
 
   if (!problem) {
     return (
@@ -724,12 +743,19 @@ function PracticePageContent() {
       </div>
 
       {isProgressModalOpen ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              handleCloseProgressModal();
+            }
+          }}
+        >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="progress-modal-title"
-            className="w-full max-w-4xl rounded-3xl border border-white/20 bg-white p-5 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+            className="max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto rounded-2xl border border-white/20 bg-white p-4 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-white sm:p-5"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -753,13 +779,13 @@ function PracticePageContent() {
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-slate-100 px-4 py-3 dark:bg-slate-800">
+              <div className="rounded-xl bg-slate-100 px-3 py-2.5 dark:bg-slate-800">
                 <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                   Level
                 </div>
                 <div className="mt-1 text-2xl font-bold">{playerProgress.level}</div>
               </div>
-              <div className="rounded-2xl bg-slate-100 px-4 py-3 dark:bg-slate-800">
+              <div className="rounded-xl bg-slate-100 px-3 py-2.5 dark:bg-slate-800">
                 <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                   Tempo total
                 </div>
@@ -767,7 +793,7 @@ function PracticePageContent() {
                   {formatDuration(displayedTotalStudyTimeMs)}
                 </div>
               </div>
-              <div className="rounded-2xl bg-emerald-50 px-4 py-3 dark:bg-emerald-950/30">
+              <div className="rounded-xl bg-emerald-50 px-3 py-2.5 dark:bg-emerald-950/30">
                 <div className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-400">
                   Acertos
                 </div>
@@ -775,7 +801,7 @@ function PracticePageContent() {
                   {correctCount}
                 </div>
               </div>
-              <div className="rounded-2xl bg-rose-50 px-4 py-3 dark:bg-rose-950/30">
+              <div className="rounded-xl bg-rose-50 px-3 py-2.5 dark:bg-rose-950/30">
                 <div className="text-xs font-semibold uppercase tracking-[0.14em] text-rose-700 dark:text-rose-400">
                   Erros
                 </div>
@@ -789,11 +815,11 @@ function PracticePageContent() {
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
                 Tempo por level
               </div>
-              <div className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
+              <div className="mt-3 max-h-40 space-y-2 overflow-y-auto pr-1">
                 {visibleLevels.map((level) => (
                   <div
                     key={level}
-                    className="flex items-center justify-between rounded-xl bg-slate-100 px-4 py-3 text-sm dark:bg-slate-800"
+                    className="flex items-center justify-between rounded-xl bg-slate-100 px-3 py-2 text-sm dark:bg-slate-800"
                   >
                     <span>Level {level}</span>
                     <span className="font-semibold">
@@ -806,56 +832,107 @@ function PracticePageContent() {
               </div>
             </div>
 
-            <div className="mt-5 grid gap-4 lg:grid-cols-2">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">
-                  Lista de acertos
-                </div>
-                <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1">
-                  {correctAttempts.length > 0 ? (
-                    correctAttempts.map((attempt, index) => (
-                        <div
-                          key={`${attempt.expression}-${attempt.selectedAnswer}-${index}`}
-                          className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100"
-                        >
-                          {attempt.expression}
-                        </div>
-                      ))
-                  ) : (
-                    <div className="rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                      Nenhum acerto registrado ainda.
-                    </div>
-                  )}
-                </div>
+            <div className="mt-5 border-t border-slate-200 pt-4 dark:border-slate-700">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setIsAttemptDetailsVisible((isVisible) => !isVisible)
+                  }
+                  className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                  aria-expanded={isAttemptDetailsVisible}
+                >
+                  {isAttemptDetailsVisible
+                    ? "Ocultar erros e acertos"
+                    : "Ver erros e acertos"}
+                </button>
+
+                {isAttemptDetailsVisible ? (
+                  <label className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                    <input
+                      type="checkbox"
+                      checked={areAttemptFieldsCompact}
+                      onChange={(event) =>
+                        setAreAttemptFieldsCompact(event.target.checked)
+                      }
+                      className="h-4 w-4 accent-cyan-600"
+                    />
+                    Campos compactos
+                  </label>
+                ) : null}
               </div>
 
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700 dark:text-rose-400">
-                  Lista de erros
-                </div>
-                <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1">
-                  {incorrectAttempts.length > 0 ? (
-                    incorrectAttempts.map((attempt, index) => (
-                        <div
-                          key={`${attempt.expression}-${attempt.selectedAnswer}-${index}`}
-                          className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-950 dark:bg-rose-950/30 dark:text-rose-100"
-                        >
-                          <div className="font-semibold">{attempt.expression}</div>
-                          <div className="mt-1 text-xs text-rose-800 dark:text-rose-200">
-                            Correta: {attempt.correctAnswer}
-                          </div>
-                          <div className="mt-1 text-xs text-rose-800 dark:text-rose-200">
-                            Respondida: {attempt.selectedAnswer}
-                          </div>
-                        </div>
-                      ))
-                  ) : (
-                    <div className="rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                      Nenhum erro registrado ainda.
+              {isAttemptDetailsVisible ? (
+                <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">
+                      Lista de acertos
                     </div>
-                  )}
+                    <div className="mt-3 max-h-44 space-y-2 overflow-y-auto pr-1">
+                      {correctAttempts.length > 0 ? (
+                        correctAttempts.map((attempt, index) => (
+                          <div
+                            key={`${attempt.expression}-${attempt.selectedAnswer}-${index}`}
+                            className={`rounded-xl bg-emerald-50 text-sm text-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100 ${
+                              areAttemptFieldsCompact
+                                ? "px-3 py-2"
+                                : "px-4 py-3"
+                            }`}
+                          >
+                            {attempt.expression}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                          Nenhum acerto registrado ainda.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700 dark:text-rose-400">
+                      Lista de erros
+                    </div>
+                    <div className="mt-3 max-h-44 space-y-2 overflow-y-auto pr-1">
+                      {incorrectAttempts.length > 0 ? (
+                        incorrectAttempts.map((attempt, index) => (
+                          <div
+                            key={`${attempt.expression}-${attempt.selectedAnswer}-${index}`}
+                            className={`rounded-xl bg-rose-50 text-sm text-rose-950 dark:bg-rose-950/30 dark:text-rose-100 ${
+                              areAttemptFieldsCompact
+                                ? "px-3 py-2"
+                                : "px-4 py-3"
+                            }`}
+                          >
+                            <div className="font-semibold">
+                              {attempt.expression}
+                            </div>
+                            <div
+                              className={`text-xs text-rose-800 dark:text-rose-200 ${
+                                areAttemptFieldsCompact ? "mt-0.5" : "mt-1"
+                              }`}
+                            >
+                              Correta: {attempt.correctAnswer}
+                            </div>
+                            <div
+                              className={`text-xs text-rose-800 dark:text-rose-200 ${
+                                areAttemptFieldsCompact ? "mt-0.5" : "mt-1"
+                              }`}
+                            >
+                              Respondida: {attempt.selectedAnswer}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                          Nenhum erro registrado ainda.
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </div>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
